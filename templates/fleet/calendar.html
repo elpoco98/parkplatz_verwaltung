@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block content %}
+<header><div><span class="eyebrow">BUCHUNGEN UND EINSÄTZE</span><h1>Buchungskalender</h1><p>Wann ist welches Fahrzeug reserviert oder in Nutzung? Klicke eine Buchung für die Details an.</p></div><a class="button" href="{% url 'availability' %}">Freies Fahrzeug suchen</a></header>
+<form method="get" class="panel calendarfilters">{{ form.as_p }}<button>Anzeigen</button><a href="{% url 'booking_calendar' %}">Aktueller Monat</a></form>
+{% if calendar %}
+<div class="calendarheading"><div class="actions">{% if previous_url %}<a class="button secondary" href="{{ previous_url }}">← Vorheriger Monat</a>{% endif %}<h2>{{ calendar.title }}</h2>{% if following_url %}<a class="button secondary" href="{{ following_url }}">Nächster Monat →</a>{% endif %}</div><div class="legend"><span class="badge reserved">Reservierung</span><span class="badge in_use">Nutzung</span><span class="badge late">Rückgabe offen</span></div></div>
+<section class="panel tablewrap"><div class="calendargrid">
+<div class="weekday">Montag</div><div class="weekday">Dienstag</div><div class="weekday">Mittwoch</div><div class="weekday">Donnerstag</div><div class="weekday">Freitag</div><div class="weekday">Samstag</div><div class="weekday">Sonntag</div>
+{% for week in calendar.weeks %}{% for day in week %}<div class="calendarday {% if not day.in_month %}outside{% endif %} {% if day.today %}today{% endif %}"><time datetime="{{ day.date|date:'Y-m-d' }}">{{ day.date|date:'d.m.' }}</time>
+{% for event in day.events %}<details class="calendarevent {{ event.kind }}"><summary><strong>{{ event.vehicle.plate }}</strong><span>{{ event.time_label }} · {{ event.label }}</span></summary><div><strong>{{ event.vehicle.name }}</strong><small>{{ event.vehicle.vehicle_type|default:'Ohne Typ' }}</small><small>Benutzer: {{ event.user.username }}</small><small>Von {{ event.start|date:'d.m.Y H:i' }}</small><small>{% if event.end %}Bis {{ event.end|date:'d.m.Y H:i' }}{% else %}Rückgabe überfällig, Ende noch offen{% endif %}</small><small>{{ event.purpose }}</small></div></details>{% empty %}<small class="calendarfree">Keine Buchung</small>{% endfor %}
+</div>{% endfor %}{% endfor %}</div></section>
+<p class="hint">Mehrtägige Buchungen erscheinen an jedem betroffenen Tag. Stornierte Reservierungen werden ausgeblendet. Bei überfälligen Nutzungen ist die Rückgabe offen; dies wird auch für spätere Tage angezeigt. Geplante Rückgaben können sich verschieben.</p>
+{% endif %}{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<header><div><span class="eyebrow">FAHRT PLANEN</span><h1>Verfügbarkeit suchen</h1><p>Wann brauchst du ein Fahrzeug? Finde alle Fahrzeuge, die im gesamten Zeitraum verfügbar sind.</p></div></header>
+<form method="get" class="panel dataform">
+    {{ form.as_p }}
+    <div class="actions"><button>Verfügbare Fahrzeuge suchen</button><a class="button secondary" href="{% url 'availability' %}">Zurücksetzen</a></div>
+</form>
+{% if searched %}
+<section class="searchresults">
+    <h2>{{ vehicles|length }} verfügbare Fahrzeug{{ vehicles|length|pluralize:'e' }}</h2>
+    <p class="muted">{{ form.cleaned_data.start|date:'d.m.Y H:i' }} bis {{ form.cleaned_data.end|date:'d.m.Y H:i' }} · Schweizer Zeit</p>
+    <div class="panel tablewrap"><table>
+    <thead><tr><th>Fahrzeug</th><th>Fahrzeugtyp</th><th>Verfügbarkeit</th><th>Aktion</th></tr></thead>
+    <tbody>{% for vehicle in vehicles %}<tr>
+        <td><strong>{{ vehicle.plate }}</strong><small>{{ vehicle.name }} · {{ vehicle.mileage }} km</small></td>
+        <td>{{ vehicle.vehicle_type|default:'Ohne Typ' }}</td>
+        <td><span class="badge parked">Im gewünschten Zeitraum frei</span>{% for usage in vehicle.open_usages %}<small>Aktuell in Betrieb · Rückgabe geplant {{ usage.expected_return|date:'d.m.Y H:i' }}</small>{% endfor %}</td>
+        <td><a class="button small" href="{% url 'reservation_create' vehicle.pk %}?{{ reservation_query }}">Für diesen Zeitraum reservieren</a></td>
+    </tr>{% empty %}<tr><td colspan="4" class="empty">Für diesen Zeitraum ist kein Fahrzeug verfügbar. Bitte ändere die Zeiten und suche erneut.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="hint">Die Zeiten werden beim Reservieren übernommen. Die Verfügbarkeit wird beim Speichern erneut geprüft. Fahrzeuge, die aktuell in Betrieb sind, sind ab ihrer geplanten Rückgabe verfügbar; überfällige Rückgaben sperren die Verfügbarkeit bis zur tatsächlichen Rückgabe.</p>
+</section>
+{% else %}<p class="hint">Wähle Datum und Uhrzeit für Beginn und Ende. Bereits reservierte, deaktivierte oder im Zeitraum genutzte Fahrzeuge werden ausgeschlossen.</p>{% endif %}
+{% endblock %}
